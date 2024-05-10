@@ -4,12 +4,18 @@ import os
 from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, filters
 
+from const import CHAT_TOKEN
+from geminia import GeminiIa
+
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    response = GeminiIa().execute()
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=response.text)
+
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text="💡 Olá! Sabia que responder perguntas sobre o que você estudou é uma ótima maneira de memorizar melhor o conteúdo? 🧠 Ao buscar as respostas, você reforça as conexões neurais e consolida o aprendizado.",
@@ -40,7 +46,15 @@ async def handle_document_pdf(update: Update, context: ContextTypes.DEFAULT_TYPE
     await file.download_to_drive(f"files/{filename}")
 
     await context.bot.send_message(
-        chat_id=update.effective_chat.id, text=f"✅ Recebi o arquivo '{filename}'."
+        chat_id=update.effective_chat.id,
+        text=f"✅ Gerando suas perguntas...",
+    )
+
+    # Gera as perguntas usando IA
+    response = GeminiIa().execute(filename)
+
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id, text=response, parse_mode="Markdown"
     )
 
 
@@ -52,11 +66,7 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 if __name__ == "__main__":
-    application = (
-        ApplicationBuilder()
-        .token("7040508328:AAHKt3eB3tt0zG2iga9LoNxP8MSyXi5nPeU")
-        .build()
-    )
+    application = ApplicationBuilder().token(CHAT_TOKEN).build()
 
     start_handler = MessageHandler(filters.TEXT & ~filters.COMMAND, start)
     document_pdf_handler = MessageHandler(filters.Document.PDF, handle_document_pdf)
