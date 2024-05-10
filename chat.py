@@ -13,9 +13,6 @@ logging.basicConfig(
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    response = GeminiIa().execute()
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=response.text)
-
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text="💡 Olá! Sabia que responder perguntas sobre o que você estudou é uma ótima maneira de memorizar melhor o conteúdo? 🧠 Ao buscar as respostas, você reforça as conexões neurais e consolida o aprendizado.",
